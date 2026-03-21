@@ -41,3 +41,5 @@ console.log(definirTipoTriangulo(a9, b9, c9));
 console.log(definirTipoTriangulo(a10, b10, c10));
 console.log(definirTipoTriangulo(a11, b11, c11));
 console.log(definirTipoTriangulo(a12, b12, c12));
+
+//Exercícios retirados de https://ifpb.github.io/exercises/

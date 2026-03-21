@@ -27,3 +27,4 @@ console.log(calcular(subtracao, a, b))
 console.log(calcular(multiplicacao, a, b))
 console.log(calcular(divisao, a, b))
 
+//Exercícios retirados de https://ifpb.github.io/exercises/
