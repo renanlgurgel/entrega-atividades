@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explorador de Bandeiras do Mundo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .flag-card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .flag-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .flag-img {
+            aspect-ratio: 3 / 2;
+            object-fit: cover;
+            border-bottom: 1px solid #f3f4f6;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen font-sans">
+
+    <header class="bg-white shadow-sm sticky top-0 z-10">
+        <div class="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-2">
+                <span class="text-blue-600">🌍</span> Bandeiras do Mundo
+            </h1>
+            <div class="relative w-full md:w-96">
+                <input 
+                    type="text" 
+                    id="search-input" 
+                    placeholder="Pesquisar país ou código (ex: BR, Brasil)..." 
+                    class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                >
+                <div class="absolute left-3 top-2.5 text-gray-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+        <div class="mb-6 flex justify-between items-center text-sm text-gray-500">
+            <p id="counter">Carregando países...</p>
+        </div>
+
+        <div id="flags-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
+        </div>
+
+        <div id="empty-state" class="hidden flex flex-col items-center justify-center py-20 text-gray-500">
+            <span class="text-6xl mb-4">🔍</span>
+            <p class="text-xl font-medium">Nenhum país encontrado para essa busca.</p>
+        </div>
+    </main>
+
+    <footer class="bg-white border-t mt-12 py-8">
+        <div class="max-w-7xl mx-auto px-4 text-center text-gray-500 text-sm">
+            <p>Dados baseados no repositório <a href="https://github.com/hampusborgos/country-flags" target="_blank" class="text-blue-600 hover:underline">hampusborgos/country-flags</a>.</p>
+            <p class="mt-2">Feito com ❤️ para exploradores do mundo.</p>
+        </div>
+    </footer>
+
+    <script>
+        const countries = [
+            { code: "ad", name: "Andorra" }, { code: "ae", name: "Emirados Árabes Unidos" }, { code: "af", name: "Afeganistão" },
+            { code: "ag", name: "Antígua e Barbuda" }, { code: "ai", name: "Anguila" }, { code: "al", name: "Albânia" },
+            { code: "am", name: "Armênia" }, { code: "ao", name: "Angola" }, { code: "aq", name: "Antártida" },
+            { code: "ar", name: "Argentina" }, { code: "as", name: "Samoa Americana" }, { code: "at", name: "Áustria" },
+            { code: "au", name: "Austrália" }, { code: "aw", name: "Aruba" }, { code: "ax", name: "Ilhas Aland" },
+            { code: "az", name: "Azerbaijão" }, { code: "ba", name: "Bósnia e Herzegovina" }, { code: "bb", name: "Barbados" },
+            { code: "bd", name: "Bangladesh" }, { code: "be", name: "Bélgica" }, { code: "bf", name: "Burquina Faso" },
+            { code: "bg", name: "Bulgária" }, { code: "bh", name: "Bahrein" }, { code: "bi", name: "Burundi" },
+            { code: "bj", name: "Benim" }, { code: "bl", name: "São Bartolomeu" }, { code: "bm", name: "Bermudas" },
+            { code: "bn", name: "Brunei" }, { code: "bo", name: "Bolívia" }, { code: "bq", name: "Países Baixos Caribenhos" },
+            { code: "br", name: "Brasil" }, { code: "bs", name: "Bahamas" }, { code: "bt", name: "Butão" },
+            { code: "bv", name: "Ilha Bouvet" }, { code: "bw", name: "Botsuana" }, { code: "by", name: "Bielorrússia" },
+            { code: "bz", name: "Belize" }, { code: "ca", name: "Canadá" }, { code: "cc", name: "Ilhas Cocos" },
+            { code: "cd", name: "República Democrática do Congo" }, { code: "cf", name: "República Centro-Africana" },
+            { code: "cg", name: "Congo" }, { code: "ch", name: "Suíça" }, { code: "ci", name: "Costa do Marfim" },
+            { code: "ck", name: "Ilhas Cook" }, { code: "cl", name: "Chile" }, { code: "cm", name: "Camarões" },
+            { code: "cn", name: "China" }, { code: "co", name: "Colômbia" }, { code: "cr", name: "Costa Rica" },
+            { code: "cu", name: "Cuba" }, { code: "cv", name: "Cabo Verde" }, { code: "cw", name: "Curaçao" },
+            { code: "cx", name: "Ilha Christmas" }, { code: "cy", name: "Chipre" }, { code: "cz", name: "República Tcheca" },
+            { code: "de", name: "Alemanha" }, { code: "dj", name: "Djibuti" }, { code: "dk", name: "Dinamarca" },
+            { code: "dm", name: "Dominica" }, { code: "do", name: "República Dominicana" }, { code: "dz", name: "Argélia" },
+            { code: "ec", name: "Equador" }, { code: "ee", name: "Estônia" }, { code: "eg", name: "Egito" },
+            { code: "eh", name: "Saara Ocidental" }, { code: "er", name: "Eritreia" }, { code: "es", name: "Espanha" },
+            { code: "et", name: "Etiópia" }, { code: "fi", name: "Finlândia" }, { code: "fj", name: "Fiji" },
+            { code: "fk", name: "Ilhas Malvinas" }, { code: "fm", name: "Micronésia" }, { code: "fo", name: "Ilhas Faroe" },
+            { code: "fr", name: "França" }, { code: "ga", name: "Gabão" }, { code: "gb", name: "Reino Unido" },
+            { code: "gd", name: "Granada" }, { code: "ge", name: "Geórgia" }, { code: "gf", name: "Guiana Francesa" },
+            { code: "gg", name: "Guernsey" }, { code: "gh", name: "Gana" }, { code: "gi", name: "Gibraltar" },
+            { code: "gl", name: "Groenlândia" }, { code: "gm", name: "Gâmbia" }, { code: "gn", name: "Guiné" },
+            { code: "gp", name: "Guadalupe" }, { code: "gq", name: "Guiné Equatorial" }, { code: "gr", name: "Grécia" },
+            { code: "gs", name: "Ilhas Geórgia do Sul e Sandwich do Sul" }, { code: "gt", name: "Guatemala" },
+            { code: "gu", name: "Guam" }, { code: "gw", name: "Guiné-Bissau" }, { code: "gy", name: "Guiana" },
+            { code: "hk", name: "Hong Kong" }, { code: "hm", name: "Ilha Heard e Ilhas McDonald" }, { code: "hn", name: "Honduras" },
+            { code: "hr", name: "Croácia" }, { code: "ht", name: "Haiti" }, { code: "hu", name: "Hungria" },
+            { code: "id", name: "Indonésia" }, { code: "ie", name: "Irlanda" }, { code: "il", name: "Israel" },
+            { code: "im", name: "Ilha de Man" }, { code: "in", name: "Índia" }, { code: "io", name: "Território Britânico do Oceano Índico" },
+            { code: "iq", name: "Iraque" }, { code: "ir", name: "Irã" }, { code: "is", name: "Islândia" },
+            { code: "it", name: "Itália" }, { code: "je", name: "Jersey" }, { code: "jm", name: "Jamaica" },
+            { code: "jo", name: "Jordânia" }, { code: "jp", name: "Japão" }, { code: "ke", name: "Quênia" },
+            { code: "kg", name: "Quirguistão" }, { code: "kh", name: "Camboja" }, { code: "ki", name: "Quiribati" },
+            { code: "km", name: "Comores" }, { code: "kn", name: "São Cristóvão e Névis" }, { code: "kp", name: "Coreia do Norte" },
+            { code: "kr", name: "Coreia do Sul" }, { code: "kw", name: "Kuwait" }, { code: "ky", name: "Ilhas Cayman" },
+            { code: "kz", name: "Cazaquistão" }, { code: "la", name: "Laos" }, { code: "lb", name: "Líbano" },
+            { code: "lc", name: "Santa Lúcia" }, { code: "li", name: "Liechtenstein" }, { code: "lk", name: "Sri Lanka" },
+            { code: "lr", name: "Libéria" }, { code: "ls", name: "Lesoto" }, { code: "lt", name: "Lituânia" },
+            { code: "lu", name: "Luxemburgo" }, { code: "lv", name: "Letônia" }, { code: "ly", name: "Líbia" },
+            { code: "ma", name: "Marrocos" }, { code: "mc", name: "Mônaco" }, { code: "md", name: "Moldávia" },
+            { code: "me", name: "Montenegro" }, { code: "mf", name: "São Martinho" }, { code: "mg", name: "Madagascar" },
+            { code: "mh", name: "Ilhas Marshall" }, { code: "mk", name: "Macedônia do Norte" }, { code: "ml", name: "Mali" },
+            { code: "mm", name: "Mianmar" }, { code: "mn", name: "Mongólia" }, { code: "mo", name: "Macau" },
+            { code: "mp", name: "Ilhas Marianas do Norte" }, { code: "mq", name: "Martinica" }, { code: "mr", name: "Mauritânia" },
+            { code: "ms", name: "Montserrat" }, { code: "mt", name: "Malta" }, { code: "mu", name: "Maurício" },
+            { code: "mv", name: "Maldivas" }, { code: "mw", name: "Malawi" }, { code: "mx", name: "México" },
+            { code: "my", name: "Malásia" }, { code: "mz", name: "Moçambique" }, { code: "na", name: "Namíbia" },
+            { code: "nc", name: "Nova Caledônia" }, { code: "ne", name: "Níger" }, { code: "nf", name: "Ilha Norfolk" },
+            { code: "ng", name: "Nigéria" }, { code: "ni", name: "Nicarágua" }, { code: "nl", name: "Países Baixos" },
+            { code: "no", name: "Noruega" }, { code: "np", name: "Nepal" }, { code: "nr", name: "Nauru" },
+            { code: "nu", name: "Niue" }, { code: "nz", name: "Nova Zelândia" }, { code: "om", name: "Omã" },
+            { code: "pa", name: "Panamá" }, { code: "pe", name: "Peru" }, { code: "pf", name: "Polinésia Francesa" },
+            { code: "pg", name: "Papua Nova Guiné" }, { code: "ph", name: "Filipinas" }, { code: "pk", name: "Paquistão" },
+            { code: "pl", name: "Polônia" }, { code: "pm", name: "São Pedro e Miquelão" }, { code: "pn", name: "Ilhas Pitcairn" },
+            { code: "pr", name: "Porto Rico" }, { code: "ps", name: "Palestina" }, { code: "pt", name: "Portugal" },
+            { code: "pw", name: "Palau" }, { code: "py", name: "Paraguai" }, { code: "qa", name: "Catar" },
+            { code: "re", name: "Reunião" }, { code: "ro", name: "Romênia" }, { code: "rs", name: "Sérvia" },
+            { code: "ru", name: "Rússia" }, { code: "rw", name: "Ruanda" }, { code: "sa", name: "Arábia Saudita" },
+            { code: "sb", name: "Ilhas Salomão" }, { code: "sc", name: "Seicheles" }, { code: "sd", name: "Sudão" },
+            { code: "se", name: "Suécia" }, { code: "sg", name: "Singapura" }, { code: "sh", name: "Santa Helena" },
+            { code: "si", name: "Eslovênia" }, { code: "sj", name: "Svalbard e Jan Mayen" }, { code: "sk", name: "Eslováquia" },
+            { code: "sl", name: "Serra Leoa" }, { code: "sm", name: "San Marino" }, { code: "sn", name: "Senegal" },
+            { code: "so", name: "Somália" }, { code: "sr", name: "Suriname" }, { code: "ss", name: "Sudão do Sul" },
+            { code: "st", name: "São Tomé e Príncipe" }, { code: "sv", name: "El Salvador" }, { code: "sx", name: "Sint Maarten" },
+            { code: "sy", name: "Síria" }, { code: "sz", name: "Eswatini" }, { code: "tc", name: "Ilhas Turcas e Caicos" },
+            { code: "td", name: "Chade" }, { code: "tf", name: "Terras Austrais e Antárticas Francesas" }, { code: "tg", name: "Togo" },
+            { code: "th", name: "Tailândia" }, { code: "tj", name: "Tajiquistão" }, { code: "tk", name: "Tokelau" },
+            { code: "tl", name: "Timor-Leste" }, { code: "tm", name: "Turcomenistão" }, { code: "tn", name: "Tunísia" },
+            { code: "to", name: "Tonga" }, { code: "tr", name: "Turquia" }, { code: "tt", name: "Trinidad e Tobago" },
+            { code: "tv", name: "Tuvalu" }, { code: "tw", name: "Taiwan" }, { code: "tz", name: "Tanzânia" },
+            { code: "ua", name: "Ucrânia" }, { code: "ug", name: "Uganda" }, { code: "um", name: "Ilhas Menores Distantes dos Estados Unidos" },
+            { code: "us", name: "Estados Unidos" }, { code: "uy", name: "Uruguai" }, { code: "uz", name: "Uzbequistão" },
+            { code: "va", name: "Vaticano" }, { code: "vc", name: "São Vicente e Granadinas" }, { code: "ve", name: "Venezuela" },
+            { code: "vg", name: "Ilhas Virgens Britânicas" }, { code: "vi", name: "Ilhas Virgens Americanas" }, { code: "vn", name: "Vietnã" },
+            { code: "vu", name: "Vanuatu" }, { code: "wf", name: "Wallis e Futuna" }, { code: "ws", name: "Samoa" },
+            { code: "ye", name: "Iêmen" }, { code: "yt", name: "Mayotte" }, { code: "za", name: "África do Sul" },
+            { code: "zm", name: "Zâmbia" }, { code: "zw", name: "Zimbábue" }
+        ];
+
+        const grid = document.getElementById('flags-grid');
+        const searchInput = document.getElementById('search-input');
+        const counter = document.getElementById('counter');
+        const emptyState = document.getElementById('empty-state');
+
+        const BASE_URL = 'https://cdn.jsdelivr.net/gh/hampusborgos/country-flags@main/svg/';
+
+        function displayFlags(filter = '') {
+            grid.innerHTML = '';
+            const normalizedFilter = filter.toLowerCase().trim();
+            
+            const filteredCountries = countries.filter(c => 
+                c.name.toLowerCase().includes(normalizedFilter) || 
+                c.code.toLowerCase().includes(normalizedFilter)
+            );
+
+            if (filteredCountries.length === 0) {
+                emptyState.classList.remove('hidden');
+                counter.innerText = '0 países encontrados';
+            } else {
+                emptyState.classList.add('hidden');
+                counter.innerText = `${filteredCountries.length} países encontrados`;
+                
+                filteredCountries.forEach(country => {
+                    const card = document.createElement('div');
+                    card.className = 'flag-card bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 flex flex-col cursor-pointer';
+                    
+                    card.innerHTML = `
+                        <img 
+                            src="${BASE_URL}${country.code}.svg" 
+                            alt="Bandeira de ${country.name}" 
+                            class="flag-img w-full bg-gray-100"
+                            loading="lazy"
+                            onerror="this.src='https://via.placeholder.com/300x200?text=Indisponível'"
+                        >
+                        <div class="p-4">
+                            <h3 class="font-bold text-gray-800 text-sm truncate" title="${country.name}">${country.name}</h3>
+                            <span class="text-xs font-mono text-gray-400 uppercase">${country.code}</span>
+                        </div>
+                    `;
+                    
+                    card.onclick = () => {
+                        console.log(`País selecionado: ${country.name} (${country.code})`);
+                    };
+                    
+                    grid.appendChild(card);
+                });
+            }
+        }
+
+        let timeout = null;
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                displayFlags(e.target.value);
+            }, 300);
+        });
+
+        window.onload = () => {
+            displayFlags();
+        };
+    </script>
+</body>
+</html>
